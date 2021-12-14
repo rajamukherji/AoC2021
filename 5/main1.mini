@@ -1,0 +1,32 @@
+let Input := list(file(Args[1], "r"):rest / "\n", _:trim, _:replace(" -> ", ","), _ / ",", list(_, integer))
+
+print(Input)
+
+let Map := {}
+
+for (X1, Y1, X2, Y2) in Input do
+	if X1 = X2 then
+		if Y1 < Y2 then
+			for Y in Y1 .. Y2 do
+				Map[(X1, Y), fun 0] := old + 1
+			end
+		else
+			for Y in Y2 .. Y1 do
+				Map[(X1, Y), fun 0] := old + 1
+			end
+		end
+	elseif Y1 = Y2 then
+		if X1 < X2 then
+			for X in X1 .. X2 do
+				Map[(X, Y1), fun 0] := old + 1
+			end
+		else
+			for X in X2 .. X1 do
+				Map[(X, Y1), fun 0] := old + 1
+			end
+		end
+	end
+end
+
+print(Map, "\n")
+print(count(Map ->? (_ > 1)))

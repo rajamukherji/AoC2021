@@ -1,0 +1,42 @@
+let Exits := {}
+
+let Input := file(Args[1], "r")
+loop
+	let Line := while Input:read
+	let (From, To) := Line:trim / "-"
+	if From then
+		Exits[From, fun []]:put(To)
+		Exits[To, fun []]:put(From)
+	end
+end
+
+print(Exits, "\n")
+
+var Total := 0
+
+fun paths(Node, Path, Revisit) do
+	if Node = "end" then
+		print(Path, "\n")
+		Total := old + 1
+		ret
+	end
+	for Exit in Exits[Node] do
+		if Exit = "start" then
+			next
+		end
+		let Visited := Path:find(Exit)
+		if (Exit:lower = Exit) and Visited then
+			Revisit and next
+			Path:put(Exit)
+			paths(Exit, Path, 1)
+			Path:pull
+		else
+			Path:put(Exit)
+			paths(Exit, Path, Revisit)
+			Path:pull
+		end
+	end
+end
+
+paths("start", ["start"], nil)
+print(Total, "\n")

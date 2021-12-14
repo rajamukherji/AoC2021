@@ -1,0 +1,59 @@
+let Outputs := list(file(Args[1], "r"):rest / "\n", _:trim, _ / " ")
+
+:<
+  A
+ B C
+  D
+ E F
+  G
+>:
+
+let Segments := map("abcdefg" => (2; X) 2 ^ (X - 1))
+let Decoder := {
+	sum("abcefg", Segments[_]) is 0,
+	sum("cf", Segments[_]) is 1,
+	sum("acdeg", Segments[_]) is 2,
+	sum("acdfg", Segments[_]) is 3,
+	sum("bcdf", Segments[_]) is 4,
+	sum("abdfg", Segments[_]) is 5,
+	sum("abdefg", Segments[_]) is 6,
+	sum("acf", Segments[_]) is 7,
+	sum("abcdefg", Segments[_]) is 8,
+	sum("abcdfg", Segments[_]) is 9
+}
+
+fun decode(Input, Output) do
+	let Digits := {}
+	for Digit in Input do
+		Digits[Digit:length, fun []]:put(sum(Digit, Segments[_]))
+	end
+	let CF := Digits[2][1]
+	let A := Digits[3][1] - CF
+	let BD := Digits[4][1] - Digits[2][1]
+	let ADG := (/\) ! Digits[5]
+	let DG := ADG - A
+	let CED := 127 - ((/\) ! Digits[6])
+	let D := DG /\ CED
+	let G := DG - D
+	let B := BD - D
+	let C := CF /\ CED
+	let F := CF - C
+	let E := CED - C - D
+	let Map := map([A, B, C, D, E, F, G] => (2; X) 2 ^ (X - 1))
+	ret integer(sum(Output; Digit) string(Decoder[sum(Digit, Segments[_], Map[_])]))
+end
+
+var Total := 0
+
+for Output in Outputs do
+	let N := Output:find("|")
+	let Input := Output:splice(1, N - 1)
+	Output:pop
+	print('Input = {Input}, Output = {Output}\n')
+	let Decoded := decode(Input, Output)
+	print('Decoded = {Decoded}\n')
+	Total := old + Decoded
+end
+
+print(Total, "\n")
+

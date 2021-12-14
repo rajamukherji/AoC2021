@@ -1,0 +1,25 @@
+let Input := file(Args[1], "r")
+
+var Polymer := list(Input:read:trim)
+Input:read
+
+let Rules := {}
+loop
+	let Line := Input:read
+	let (M, A, B, C) := while Line % r"([A-Z])([A-Z]) -> ([A-Z])"
+	Rules[(A, B)] := C
+end
+
+for I in 1 .. 10 do
+	let Next := [Polymer[1]]
+	for Pair in batch(Polymer, 2, 1, tuple) do
+		if let Add := Rules[Pair] then
+			Next:put(Add)
+		end
+		Next:put(Pair[2])
+	end
+	Polymer := Next
+end
+
+let Counts := list(count2(Polymer)):sort
+print(Counts[-1] - Counts[1], "\n")

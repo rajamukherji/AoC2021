@@ -1,0 +1,18 @@
+var Counts := count2(file(Args[1], "r"):rest:trim / ",", integer)
+
+for J in 0 .. 8 do
+	Counts[J] := old or 0
+end
+
+for I in 1 .. 80 do
+	print(Counts, "\n")
+	let Next := {}
+	for J in 0 .. 7 do
+		Next[J] := Counts[J + 1]
+	end
+	Next[8] := Counts[0]
+	Next[6] := old + Counts[0] 
+	Counts := Next
+end
+
+print(sum(Counts))

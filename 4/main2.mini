@@ -1,0 +1,41 @@
+let Input := file(Args[1], "r")
+let Numbers := list(Input:read:trim / ",", integer)
+
+class: board(:numbers, :counts, :won)
+
+let Boards := []
+loop
+	while Input:read = "\n"
+	let Board := board({}, {})
+	for I in 1 .. 5 do
+		let Line := Input:read
+		for J, N in Line:trim / " " -> integer do
+			Board:numbers[N, fun []]:put(I, J + 5)
+		end
+	end
+	Boards:put(Board)
+end
+
+var Won := 0
+let (Sum, Call) := for N in Numbers do
+	for I, Board in Boards do
+		Board:won and next
+		if let Mark := Board:numbers:delete(N) then
+			for M in Mark do
+				if (Board:counts[M, fun 0] := old + 1) = 5 then
+					Board:won := true
+					print('Board {I} won\n')
+					if (Won := old + 1) = count(Boards) then
+						exit exit exit (sum(key(Board:numbers)), N)
+					else
+						exit next
+					end
+				end
+			end
+		end
+	end
+end
+
+print('Sum = {Sum}\n')
+print('Call = {Call}\n')
+print(Sum * Call)

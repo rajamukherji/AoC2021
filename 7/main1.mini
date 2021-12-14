@@ -1,0 +1,10 @@
+let Input := list(file(Args[1], "r"):rest:trim / ",", integer):sort
+
+let Min := min(1 .. Input:length; I) do
+	let X := Input[I]
+	let Left := sum(Input limit (I - 1), X - _) or 0
+	let Right := sum(Input skip I, _ - X) or 0
+	Left + Right
+end
+
+print(Min, "\n")

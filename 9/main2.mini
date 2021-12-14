@@ -1,0 +1,73 @@
+let L := array(list(file(Args[1], "r"):rest / "\n", _:trim, list(_, integer)))
+
+print(L, "\n")
+
+let (R, C) := L:shape
+
+print('{R} x {C}\n')
+
+let N := array::int64([R, C])
+def Regions := []
+
+class: region(:index, :count, :link, init is; Region) do
+	Regions:put(Region)
+	Region:index := Regions:length
+	Region:count := 0
+end
+
+meth :inc(Region: region) do
+	if Region:link then
+		Region:link:inc
+	else
+		Region:count := old + 1
+	end
+end
+
+for I in 1 .. R do
+	print(L[I], "\n")
+end
+
+print("\n")
+
+for I in 1 .. R do
+	for J in 1 .. C do
+		if L[I, J] < 9 then
+			let R1 := I > 1 and Regions[N[I - 1, J]]
+			let R2 := J > 1 and Regions[N[I, J - 1]]
+			let R3 := if R1 and R2 then
+				switch (R1:index <> R2:index): integer
+				case -1 do
+					R1:count := old + R2:count
+					R2:count := 0
+					R2:link := R1
+					R1
+				case 0 do
+					R1
+				case 1 do
+					R2:count := old + R1:count
+					R1:count := 0
+					R1:link := R2
+					R2
+				end
+			else
+				R1 or R2 or region()
+			end
+			N[I, J] := R3:index
+			R3:inc
+		else
+			N[I, J] := 0
+		end
+	end
+end
+
+for I in 1 .. R do
+	print(N[I], "\n")
+end
+
+Regions:sort(; R1, R2) R1:count > R2:count
+
+for Region in Regions do
+	Region:link or print(Region, "\n")
+end
+
+print(prod(Regions limit 3, _:count), "\n")

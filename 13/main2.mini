@@ -1,0 +1,53 @@
+var Dots := []
+
+let Input := file(Args[1], "r")
+
+loop
+	let Line := Input:read:trim
+	while Line:length > 0
+	Dots:put(list(Line / ",", integer))
+end
+
+let Axes := {"x" is 1, "y" is 2}
+
+let Folds := []
+loop
+	let Line := while Input:read
+	if let Match := Line % r"fold along ([xy])=([0-9]+)" then
+		Folds:put((Axes[Match[2]], integer(Match[3])))
+	end
+end
+
+for (Axis, Fold) in Folds do
+	for Dot in Dots do
+		if Dot[Axis] > Fold then
+			Dot[Axis] := 2 * Fold - old
+		end
+	end
+end
+
+Dots:sort(; A, B) (A[2] < B[2]) or (A[2] = B[2] and A[1] <= B[1])
+
+var X := 0, Y := -1
+
+for Dot in Dots do
+	if Dot[2] > Y then
+		print("\n")
+		Y := Dot[2]
+		X := Dot[1]
+		for I in 1 .. X do
+			print(" ")
+		end
+		print("█")
+		X := Dot[1]
+	elseif Dot[1] > X then
+		for I in 2 .. (Dot[1] - X) do
+			print(" ")
+		end
+		print("█")
+		X := Dot[1]
+	end
+end
+
+print("\n\n\n")
+

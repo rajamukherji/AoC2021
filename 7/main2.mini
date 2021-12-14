@@ -1,0 +1,7 @@
+let Input := list(file(Args[1], "r"):rest:trim / ",", integer):sort
+
+let Min := min(first(Input) .. last(Input); I) do
+	sum(Input, _ - I, math::abs; N) (N + 1) * N / 2
+end
+
+print(Min, "\n")

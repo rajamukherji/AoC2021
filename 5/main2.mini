@@ -1,0 +1,22 @@
+let Input := list(file(Args[1], "r"):rest / "\n", _:trim, _:replace(" -> ", ","), _ / ",", list(_, integer))
+
+print(Input)
+
+let Map := {}
+
+for (X1, Y1, X2, Y2) in Input do
+	var X := X1, Y := Y1
+	let DX := X2 <> X1
+	let DY := Y2 <> Y1
+	print('({X1}, {Y1}) -> ({X2}, {Y2}) => ({DX}, {DY})\n')
+	Map[(X, Y), fun 0] := old + 1
+	loop
+		X := old + DX
+		Y := old + DY
+		Map[(X, Y), fun 0] := old + 1
+		until X = X2 and Y = Y2
+	end
+end
+
+print(Map, "\n")
+print(count(Map ->? (_ > 1)))

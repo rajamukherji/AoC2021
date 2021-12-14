@@ -1,0 +1,38 @@
+fun test() do
+
+let Input := list(file(Args[1], "r"):rest / "\n")
+
+let Pairs := {"{}" is "", "[]" is "", "<>" is "", "()" is ""}
+let Scores := {"{" is "3", "[" is "2", "<" is "4", "(" is "1"}
+
+let All := []
+
+for Line in Input do
+	print('Line = {Line}\n')
+	var L := Line
+	loop
+		let N := L:length
+		L := old:replace(Pairs)
+		while L:length < N
+	end
+	if L:length > 0 then
+		let M := L:replace(Scores)
+		let V := integer(M:reverse, 5)
+		All:put(V)
+	on Error do
+		nil
+	end
+end
+
+All:sort
+
+print(All[All:length div 2 + 1], "\n")
+
+end
+
+with Out := file("code.txt", "w") do
+	Out:write(test:list)
+	Out:close
+end
+
+test()

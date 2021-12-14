@@ -1,0 +1,18 @@
+let Input := list(file(Args[1], "r"):rest / "\n", _ / " ", !>; C, X) (method(C), integer(X))
+
+class: position(:horizontal, :depth, :aim)
+
+meth :forward(P: position, X: number) do
+	P:horizontal := old + X
+	P:depth := old + (X * P:aim)
+end
+meth :down(P: position, X: number) P:aim := old + X
+meth :up(P: position, X: number) P:aim := old - X
+
+let P := position(0, 0, 0)
+
+for Command in Input do
+	Command[1](P, Command[2])
+end
+
+print(P:horizontal * P:depth, "\n")

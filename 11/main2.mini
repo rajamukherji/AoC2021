@@ -1,0 +1,56 @@
+var State := $list(file(Args[1], "r"):rest / "\n", list(_, integer))
+let (W, H) := State:shape
+
+let First := for I in 1 by 1 do
+	State := old + 1
+	let Flashed := array::int8([W, H];) 0
+	var Total := 0
+	loop
+		var Continue
+		for (X, Y) in :where(State > 9) do
+			if (Flashed[X, Y] := old + 1) = 1 then
+				Total := old + 1
+				Continue := true
+				if X > 1 then
+					if Y > 1 then
+						State[X - 1, Y - 1] := old + 1
+					end
+					State[X - 1, Y] := old + 1
+					if Y < H then
+						State[X - 1, Y + 1] := old + 1
+					end
+				end
+				if X < W then
+					if Y > 1 then
+						State[X + 1, Y - 1] := old + 1
+					end
+					State[X + 1, Y] := old + 1
+					if Y < H then
+						State[X + 1, Y + 1] := old + 1
+					end
+				end
+				if Y > 1 then
+					State[X, Y - 1] := old + 1
+				end
+				if Y < H then
+					State[X, Y + 1] := old + 1
+				end
+			end
+		end
+		while Continue
+	end
+	for (X, Y) in :where(State > 9) do
+		State[X, Y] := 0
+	end
+	
+	for J in 1 .. W do
+		print(State[J], "\n")
+	end
+	print("\n")
+	
+	if Total = (W * H) then
+		exit I
+	end
+end
+
+print(First, "\n")

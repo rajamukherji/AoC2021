@@ -1,0 +1,9 @@
+let Input := list(file(Args[1], "r"):rest / "\n", list)
+
+let N := Input[1]:length
+let Gamma := integer(sum(1 .. N; I) max2(count2(Input, _[I]))[1], 2)
+let Epsilon := (1 << N) - Gamma - 1
+
+print(Gamma, "\n")
+print(Epsilon, "\n")
+print(Gamma * Epsilon, "\n")

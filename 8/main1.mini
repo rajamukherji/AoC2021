@@ -1,0 +1,13 @@
+let Outputs := list(file(Args[1], "r"):rest / "\n", _:trim, _ / " ")
+
+var Count := 0
+
+for Output in Outputs do
+	let N := Output:find("|")
+	let Input := Output:splice(1, N - 1)
+	Output:pop
+	print('Input = {Input}, Output = {Output}\n')
+	Count := old + count(Output ->? fun(X) X:length < 5 or X:length = 7)
+end
+
+print(Count, "\n")

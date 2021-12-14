@@ -1,0 +1,7 @@
+let Input := list(file(Args[1], "r"):rest / "\n", integer)
+
+print(count(Input), "\n")
+
+print(batch(Input, 3, 1, +):join("\n"), "\n")
+
+print(count(batch(batch(Input, 3, 1, +), 2, 1, <) ->? 1), "\n")

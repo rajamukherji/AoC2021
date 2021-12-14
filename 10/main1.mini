@@ -1,0 +1,27 @@
+let Input := list(file(Args[1], "r"):rest / "\n")
+
+let Pairs := {"{}" is "", "[]" is "", "<>" is "", "()" is ""}
+let Open := {"{" is "", "[" is "", "<" is "", "(" is ""}
+let Values := {")" is 3, "]" is 57, "}" is 1197, ">" is 25137}
+
+var Errors := 0
+
+for Line in Input do
+	print('Line = {Line}\n')
+	var L := Line
+	loop
+		let N := L:length
+		L := old:replace(Pairs)
+		print('\t{L}\n')
+		while L:length < N
+	end
+	if L:length > 0 then
+		let M := L:replace(Open)
+		print('-> {M}\n')
+		if M:length > 0 then
+			Errors := old + Values[M[1]]
+		end
+	end
+end
+
+print(Errors, "\n")

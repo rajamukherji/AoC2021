@@ -1,0 +1,57 @@
+let Input := file(Args[1], "r")
+
+let Polymer := list(Input:read:trim)
+Input:read
+
+let Rules := {}
+let Elements := {}
+loop
+	let Line := Input:read
+	let (M, A, B, C) := while Line % r"([A-Z])([A-Z]) -> ([A-Z])"
+	let I := Elements[A] := old or (Elements:size + 1)
+	let J := Elements[B] := old or (Elements:size + 1)
+	let K := Elements[C] := old or (Elements:size + 1)
+	Rules[(I, J)] := K
+end
+
+print(Elements, "\n")
+
+let N := Elements:size
+
+let Pairs := list(grid(1 .. N, 1 .. N, tuple))
+var Counts := {}
+for Pair in Pairs do
+	let Count := vector::int64(Elements:size;) 0
+	Count[Pair[1]] := 1
+	Counts[Pair] := Count
+end
+
+fun total(Counts) do
+	let Total := vector::int64(Elements:size;) 0
+	for Pair in batch(Polymer -> Elements[_], 2, 1, tuple) do
+		Total := old + Counts[Pair]
+	end
+	Total[last(Polymer, Elements[_])] := old + 1
+	ret Total
+end
+
+print(total(Counts), "\n")
+
+for I in 1 .. 40 do
+	let Next := {}
+	for Pair in Pairs do
+		if let Rule := Rules[Pair] then
+			Next[Pair] := Counts[(Pair[1], Rule)] + Counts[(Rule, Pair[2])]
+		else
+			Next[Pair] := Counts[Pair]
+		end
+	end
+	Counts := Next
+	
+	print(total(Counts), "\n")
+end
+
+
+let Total := total(Counts)
+print(Total, "\n")
+print(max(Total) - min(Total), "\n")
