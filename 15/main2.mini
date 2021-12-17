@@ -1,0 +1,21 @@
+let Map := $list(file(Args[1], "r"):rest / "\n", :trim, list(_, integer))
+
+let (W, H) := Map:shape
+let BigMap := array::int64([W * 5, H * 5])
+
+for I in 0 .. 4 do
+	for J in 0 .. 4 do
+		let Map2 := Map + (I + J)
+		Map2[Map2 > 9] := old - 9
+		BigMap[(I * W) + 1 up W, (J * H) + 1 up H] := Map2
+	end
+end
+
+let Output := file(Args[2], "w")
+for I in 1 .. BigMap:shape[1] do
+	for J in 1 .. BigMap:shape[2] do
+		Output:write(BigMap[I, J])
+	end
+	Output:write("\n")
+end
+Output:close

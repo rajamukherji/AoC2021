@@ -1,0 +1,61 @@
+let (X₁, X₂, Y₁, Y₂) := with Match := file(Args[1], "r"):rest % r"target area: x=([-0-9]+)..([-0-9]+), y=([-0-9]+)..([-0-9]+)" do
+	(integer(Match[2]), integer(Match[3]), integer(Match[4]), integer(Match[5]))
+end
+
+print(X₁, "\n")
+print(X₂, "\n")
+print(Y₁, "\n")
+print(Y₂, "\n")
+
+:<
+Tmax is nil for examples, ignore other case
+Y(T) := T * (2 * Vy - T + 1) / 2
+Ymax := Vy * (Vy + 1) /2
+
+Y₁ ≤ Y(T) ≤ Y₂
+
+2 * Y₁ ≤ T * (2 * Vy - T + 1) ≤ 2 * Y₂
+
+T ≤ abs(2 * Y₂)
+
+2 * Y₁/T + T - 1 ≤ 2 * Vy ≤ 2 * Y₂/T + T - 1
+
+0, 9, 17, 24, 30, 35, 39, 42, 44, 45, ..
+>:
+
+print('Y₁ = {Y₁}, Y₂ = {Y₂}\n')
+let Vys := {}
+for T in math::abs(2 * Y₁) .. 1 by -1 do
+	let Vymin := integer(math::ceil(Y₁ / T + ((T - 1) / 2)))
+	let Vymax := integer(math::floor(Y₂ / T + ((T - 1) / 2)))
+	print('T = {T}, Vy ∈ {Vymin} .. {Vymax}\n')
+	for Vy in Vymin .. Vymax do
+		print('Vy = {Vy}\n')
+		let Yt := T * Vy - (T * (T - 1) / 2)
+		print('T = {T}, Vy = {Vy}, Yt = {Yt}\n')
+		if Y₁ <= Yt <= Y₂ then
+			Vys[T, fun []]:put(Vy)
+		end
+	end
+end
+
+print('Vys = {Vys}\n')
+
+let Tmax := max(key(Vys))
+
+let Total := {}
+for Vx in 1 .. X₂ do
+	var Xt := 0, V := Vx
+	for T in 1 .. Tmax do
+		Xt := old + V
+		V := old - 1
+		if V < 0 then V := 0 end
+		if X₁ <= Xt <= X₂ then
+			for Vy in Vys[T] do
+				Total[(Vx, Vy)] := 1
+			end
+		end
+	end
+end
+
+print(Total:size)

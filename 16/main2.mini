@@ -1,0 +1,86 @@
+let Hex := file(Args[1], "r"):rest:trim
+
+let Buffer := string::buffer()
+for C in Hex do
+	let S := string(integer(C, 16), 2)
+	for I in S:length .. 3 do
+		Buffer:write("0")
+	end
+	Buffer:write(S)
+end
+
+let Bits := Buffer:rest
+print('Bits = {Bits}\n')
+Buffer:write(Bits)
+
+fun decode(Buffer) do
+	let Version := integer(Buffer:read(3), 2)
+	let Type := integer(Buffer:read(3), 2)
+	print('Version = {Version}, Type = {Type}\n')
+	if Type = 4 then
+		var Value := 0
+		loop
+			while Buffer:read(1) = "1"
+			Value := (old << 4) + integer(Buffer:read(4), 2)
+		end
+		Value := (old << 4) + integer(Buffer:read(4), 2)
+		print('Value = {Value}\n')
+		ret [Version, Type, Value]
+	else
+		let Packet := [Version, Type]
+		if Buffer:read(1) = "1" then
+			let Count := integer(Buffer:read(11), 2)
+			print('Count = {Count}\n')
+			for I in 1 .. Count do
+				Packet:put(decode(Buffer))
+			end
+		else
+			let Length := integer(Buffer:read(15), 2)
+			let Start := Buffer:length
+			print('Length = {Length}\n')
+			loop
+				Packet:put(decode(Buffer))
+				while (Start - Buffer:length) < Length
+			end
+		end
+		ret Packet
+	end
+end
+
+let Packet := decode(Buffer)
+print(Packet, "\n")
+
+fun evaluate(Packet) do
+	switch Packet[2]: integer
+	case 0 do
+		ret sum(Packet skip 2, evaluate)
+	case 1 do
+		ret prod(Packet skip 2, evaluate)
+	case 2 do
+		ret min(Packet skip 2, evaluate)
+	case 3 do
+		ret max(Packet skip 2, evaluate)
+	case 4 do
+		ret Packet[3]
+	case 5 do
+		ret if evaluate(Packet[3]) > evaluate(Packet[4]) then
+			1
+		else
+			0
+		end
+	case 6 do
+		ret if evaluate(Packet[3]) < evaluate(Packet[4]) then
+			1
+		else
+			0
+		end
+	case 7 do
+		ret if evaluate(Packet[3]) = evaluate(Packet[4]) then
+			1
+		else
+			0
+		end
+	end
+end
+
+print(evaluate(Packet), "\n")

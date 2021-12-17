@@ -1,0 +1,76 @@
+let (X₁, X₂, Y₁, Y₂) := with Match := file(Args[1], "r"):rest % r"target area: x=([-0-9]+)..([-0-9]+), y=([-0-9]+)..([-0-9]+)" do
+	(integer(Match[2]), integer(Match[3]), integer(Match[4]), integer(Match[5]))
+end
+
+print(X₁, "\n")
+print(X₂, "\n")
+print(Y₁, "\n")
+print(Y₂, "\n")
+
+fun distance_x(T, Vx) sum(1 .. min([T, Vx]); I) Vx - I
+
+:< Ignore Vx with
+Vx * (Vx + 1) / 2 < X₁ =>
+Vx * (Vx + 1) < 2X₁ =>
+Vx² < 2X₁
+>:
+
+let Vxmin := integer(math::sqrt(X₁))
+
+let (Vxbest, Tmax) := for Vx in Vxmin:up do
+	print('Vx = {Vx}\n')
+	:< Want maximum time which still reaches area >:
+	:< Final distance >:
+	var X := Vx * (Vx + 1) / 2
+	if X₁ <= X <= X₂ then
+		exit (Vx, nil)
+	end
+	:< Work backwards to find time to reach area >:
+	for P in 1 .. Vx do
+		X := old - P
+		if X₁ <= X <= X₂ then
+			exit (Vx, Vx - P)
+		end
+	end
+	print('X = {X}\n')
+end
+
+print('Vxbest = {Vxbest}\n')
+print('Tmax = {Tmax}\n')
+
+:<
+Tmax is nil for examples, ignore other case
+Y(T) := T * (2 * Vy - T + 1) / 2
+Ymax := Vy * (Vy + 1) /2
+
+Y₁ ≤ Y(T) ≤ Y₂
+
+2 * Y₁ ≤ T * (2 * Vy - T + 1) ≤ 2 * Y₂
+
+T ≤ abs(2 * Y₂)
+
+2 * Y₁/T + T - 1 ≤ 2 * Vy ≤ 2 * Y₂/T + T - 1
+
+0, 9, 17, 24, 30, 35, 39, 42, 44, 45, ..
+>:
+
+print('Y₁ = {Y₁}, Y₂ = {Y₂}\n')
+let Ymax := []
+for T in math::abs(2 * Y₁) .. 1 by -1 do
+	let Vymin := integer(math::ceil(Y₁ / T + ((T - 1) / 2)))
+	let Vymax := integer(math::floor(Y₂ / T + ((T - 1) / 2)))
+	print('T = {T}, Vy ∈ {Vymin} .. {Vymax}\n')
+	for Vy in Vymin .. Vymax do
+		if Vy <= 0 then
+			next
+		end
+		print('Vy = {Vy}\n')
+		let Yt := T * Vy - (T * (T - 1) / 2)
+		print('T = {T}, Vy = {Vy}, Yt = {Yt}\n')
+		if Y₁ <= Yt <= Y₂ then
+			Ymax:put(Vy * (Vy + 1) / 2)
+		end
+	end
+end
+
+print('Ymax = {max(Ymax)}\n')

@@ -1,0 +1,48 @@
+let Map := $list(file(Args[1], "r"):rest / "\n", :trim, list(_, integer))
+
+let Queue := queue()
+let Nodes := {}
+
+Nodes[(1, 1)] := Queue:insert((1, 1), 0)
+
+let (W, H) := Map:shape
+
+fun enqueue(Pos, Score) do
+	if let Node := Nodes[Pos] then
+		if Node != "Done" then
+			if Score > Node:score then
+				print('Updating: {Pos} -> {Score}\n')
+				Node:update(Score)
+			end
+		end
+	else
+		print('Inserting: {Pos} -> {Score}\n')
+		Nodes[Pos] := Queue:insert(Pos, Score)
+	end
+end
+
+let Best := loop
+	let Next := Queue:next
+	let Value := Next:value
+	Nodes[Value] := "Done"
+	let (X, Y) := Value
+	let Score := Next:score
+	print('{Value} -> {Score}\n')
+	if X = W and Y = H then
+		exit -Score
+	end
+	if X > 1 then
+		enqueue((X - 1, Y), Score - Map[X - 1, Y])
+	end
+	if X < W then
+		enqueue((X + 1, Y), Score - Map[X + 1, Y])
+	end
+	if Y > 1 then
+		enqueue((X, Y - 1), Score - Map[X, Y - 1])
+	end
+	if Y < H then
+		enqueue((X, Y + 1), Score - Map[X, Y + 1])
+	end
+end
+
+print(Best, "\n")
