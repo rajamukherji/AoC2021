@@ -1,0 +1,80 @@
+let Input := list(file(Args[1], "r"):rest / "\n"; Line) do
+	let Number := []
+	for C in Line do
+		switch C: string
+		case "[", "]" do
+			Number:put(C)
+		case r"[0-9]" do
+			Number:put(integer(C))
+		end
+	end
+	Number
+end
+
+fun str(Number) do
+	'{Number, ","}':replace({"[," is "[", ",]" is "]"})
+end
+
+for Number in Input do
+	print(str(Number), "\n")
+end
+print("\n\n")
+
+fun red(Number) do
+	:>print('\nNumber in = {str(Number)}\n')
+	var Nest := 0
+	for I, X in Number do
+		if X = "[" then
+			Nest := old + 1
+			if Nest = 5 then
+				:> explode
+				let (L, A, B, R) := Number:splice(I, 4, [0])
+				for J in (I - 1) .. 1 by -1 do
+					if Number[J] in integer then
+						Number[J] := old + A
+						exit
+					end
+				end
+				for J in (I + 1) .. Number:length do
+					if Number[J] in integer then
+						Number[J] := old + B
+						exit
+					end
+				end
+				ret red(Number)
+			end
+		elseif X = "]" then
+			Nest := old - 1
+		end
+	end
+	for I, X in Number do
+		if X in integer and X > 9 then
+			let A := X div 2, B := X - A
+			Number:splice(I, 1, ["[", A, B, "]"])
+			ret red(Number)
+		end
+	end
+	:>print('Number out = {str(Number)}\n')
+	ret Number
+end
+
+fun mag(Number) do
+	let X := Number:pop
+	if X = "[" then
+		let Mag := (3 * mag(Number)) + (2 * mag(Number))
+		Number:pop
+		ret Mag
+	else
+		ret X
+	end
+end
+
+let Max := max(grid(Input, Input; A, B) do
+	if A = B then
+		0
+	else
+		mag(red(["["]:grow(A):grow(B):put("]")))
+	end
+end)
+
+print('Max = {Max}\n')
