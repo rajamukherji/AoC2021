@@ -1,0 +1,112 @@
+class: scanner(:beacons, :pos, :sym, :ignore, init is; Scanner) do
+	Scanner:beacons := {}
+	Scanner:ignore := 0
+end
+
+let Scanners := []
+
+with Input := file(Args[1], "r") do
+	var Scanner
+	loop
+		let Line := while Input:read
+		if let Match := Line % r"--- scanner ([0-9]+) ---" then
+			Scanners:put(Scanner := scanner())
+		elseif Line != "\n" then
+			let Beacon := $list(Line:trim / ",", integer)
+			Scanner:beacons[Beacon] := Beacon
+		end
+	end
+end
+
+let Symmetries := [
+	$[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+	$[[-1, 0, 0], [0, -1, 0], [0, 0, 1]],
+	$[[-1, 0, 0], [0, 1, 0], [0, 0, -1]],
+	$[[1, 0, 0], [0, -1, 0], [0, 0, -1]],
+	$[[0, 1, 0], [-1, 0, 0], [0, 0, 1]],
+	$[[0, -1, 0], [1, 0, 0], [0, 0, 1]],
+	$[[0, -1, 0], [-1, 0, 0], [0, 0, -1]],
+	$[[0, 1, 0], [1, 0, 0], [0, 0, -1]],
+	$[[0, 0, 1], [0, 1, 0], [-1, 0, 0]],
+	$[[0, 0, 1], [0, -1, 0], [1, 0, 0]],
+	$[[0, 0, -1], [0, -1, 0], [-1, 0, 0]],
+	$[[0, 0, -1], [0, 1, 0], [1, 0, 0]],
+	$[[0, 0, -1], [-1, 0, 0], [0, 1, 0]],
+	$[[0, 0, -1], [1, 0, 0], [0, -1, 0]],
+	$[[0, 0, 1], [-1, 0, 0], [0, -1, 0]],
+	$[[0, 0, 1], [1, 0, 0], [0, 1, 0]],
+	$[[-1, 0, 0], [0, 0, 1], [0, 1, 0]],
+	$[[1, 0, 0], [0, 0, 1], [0, -1, 0]],
+	$[[-1, 0, 0], [0, 0, -1], [0, -1, 0]],
+	$[[1, 0, 0], [0, 0, -1], [0, 1, 0]],
+	$[[0, 1, 0], [0, 0, -1], [-1, 0, 0]],
+	$[[0, -1, 0], [0, 0, -1], [1, 0, 0]],
+	$[[0, -1, 0], [0, 0, 1], [-1, 0, 0]],
+	$[[0, 1, 0], [0, 0, 1], [1, 0, 0]]
+]
+
+let Completed := []
+
+with Scanner := Scanners:pop do
+	Scanner:pos := $[0, 0, 0]
+	Scanner:sym := Symmetries[1]
+	Completed:push(Scanner)
+end
+
+print('{Scanners, "\n\n"}\n')
+
+fun find_mapping(Base, Scanner) do
+	let Beacons := Base:beacons
+	for Beacon1 in Beacons do
+		for Symmetry in Symmetries do
+			for Beacon2 in Scanner:beacons do
+				let Diffs := {}
+				var Overlap := 0
+				let Diff := Symmetry . Beacon2 - Beacon1
+				for Beacon3 in Scanner:beacons do
+					if Beacons[Symmetry . Beacon3 - Diff] then
+						Overlap := old + 1
+					end
+				end
+				if Overlap >= 12 then
+					let Beacons := {}
+					for Beacon in Scanner:beacons do
+						let Transformed := Symmetry . Beacon - Diff
+						Beacons[Transformed] := Transformed
+					end
+					Scanner:beacons := Beacons
+					Scanner:pos := -Diff
+					print('Pos = {-Diff}\n')
+					ret true
+				end
+			end
+		end
+	end			
+end
+
+loop
+	print('{Scanners:length} scanners remaining\n')
+	let Scanner := while Scanners:pop
+	for I, Base in Completed do
+		Scanner:ignore >= I and next
+		if find_mapping(Base, Scanner) then
+			exit Completed:put(Scanner)
+		end
+	else
+		Scanner:ignore := Completed:length
+		Scanners:put(Scanner)
+	end
+end
+
+let Beacons := {}
+for Scanner in Completed do
+	print('{Scanner:pos} -> {Scanner:sym}\n')
+	let Symmetry := Scanner:sym
+	let Position := Scanner:pos
+	for Beacon in Scanner:beacons do
+		Beacons[Beacon] := 1
+	end
+end
+
+print('#Beacons = {Beacons:size}\n')
+
