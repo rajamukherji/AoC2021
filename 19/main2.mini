@@ -13,7 +13,7 @@ with Input := file(Args[1], "r") do
 			Scanners:put(Scanner := scanner())
 		elseif Line != "\n" then
 			let Beacon := $list(Line:trim / ",", integer)
-			Scanner:beacons[Beacon] := Beacon
+			Scanner:beacons[Beacon] := 1
 		end
 	end
 end
@@ -57,26 +57,16 @@ print('{Scanners, "\n\n"}\n')
 
 fun find_mapping(Base, Scanner) do
 	let Beacons := Base:beacons
-	for Beacon1 in Beacons do
+	for Beacon1, Skip1 in Beacons do
 		for Symmetry in Symmetries do
-			for Beacon2 in Scanner:beacons do
-				let Diffs := {}
-				var Overlap := 0
-				let Diff := Symmetry . Beacon2 - Beacon1
-				for Beacon3 in Scanner:beacons do
-					if Beacons[Symmetry . Beacon3 - Diff] then
-						Overlap := old + 1
-					end
-				end
+			let Transformed := map(Scanner:beacons => (1 -> (Symmetry . _), 2))
+			for Beacon2, Skip2 in Transformed do
+				let Diff := Beacon2 - Beacon1
+				let Overlap := count(Transformed => (1, _ - Diff) ->? Beacons[_])
 				if Overlap >= 12 then
-					let Beacons := {}
-					for Beacon in Scanner:beacons do
-						let Transformed := Symmetry . Beacon - Diff
-						Beacons[Transformed] := Transformed
-					end
-					Scanner:beacons := Beacons
-					Scanner:pos := -Diff
-					print('Pos = {-Diff}\n')
+					Scanner:beacons := Transformed
+					Scanner:pos := Base:pos - Diff
+					print('Pos = {Scanner:pos}\n')
 					ret true
 				end
 			end
@@ -103,8 +93,8 @@ for Scanner in Completed do
 	print('{Scanner:pos} -> {Scanner:sym}\n')
 	let Symmetry := Scanner:sym
 	let Position := Scanner:pos
-	for Beacon in Scanner:beacons do
-		Beacons[Beacon] := 1
+	for Beacon, Skip in Scanner:beacons do
+		Beacons[Beacon + Scanner:pos] := 1
 	end
 end
 

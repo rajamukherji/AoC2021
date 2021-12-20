@@ -1,0 +1,47 @@
+let Input := file(Args[1], "r")
+
+let Algorithm := array(array::int8, list(Input:read:trim; C) C:ord % 2)
+
+print('Algorithm = {Algorithm}\n')
+
+Input:read
+let Lines := []
+loop
+	let Line := Input:read
+	while Line and Line != "\n"
+	Lines:put(list(Line:trim; C) C:ord % 2)
+end
+
+var Image := array(array::int8, Lines)
+var Padding := 0
+
+fun display(Image) do
+	print("\n")
+	for I in 1 .. Image:shape[1] do
+		print(Image[I], "\n")
+	end
+	print("\n")
+end
+
+display(Image)
+
+let M := $[[256, 128, 64], [32, 16, 8], [4, 2, 1]]
+
+fun enhance(Padding, Input) do
+	let (W, H) := Input:shape
+	let Temp := array::int8([W + 4, H + 4];) Padding
+	Temp[3 up W, 3 up H] := Input
+	array::int8([W + 2, H + 2]; I, J) do
+		let Index := (Temp[I up 3, J up 3] * M):sum + 1
+		:>print('{I}, {J}: {Temp[I up 3, J up 3]} -> {Index}\n')
+		Algorithm[Index]
+	end
+end
+
+for I in 1 .. 50 do
+	Image := enhance(Padding, Image)
+	Padding := Algorithm[Padding * 511 + 1]
+	display(Image)
+end
+
+print(Image:sum)
