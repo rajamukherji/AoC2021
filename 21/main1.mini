@@ -1,0 +1,28 @@
+let Input := file(Args[1], "r")
+
+var NumRolls := 0
+var Roll := 0
+fun roll() do
+	Roll := (old % 100) + 1
+	NumRolls := old + 1
+	ret Roll
+end
+
+class: player(:position, :score, init is; Player, Position) do
+	Player:position := Position
+	Player:score := 0
+end
+
+meth :move(Player: player) do
+	Player:position := (old + roll() + roll() + roll() - 1) % 10 + 1
+	Player:score := old + Player:position
+	ret Player:score >= 1000
+end
+
+var Player1 := player(integer(Input:read:after(":"):trim))
+var Player2 := player(integer(Input:read:after(":"):trim))
+
+print(loop
+	Player1:move and exit Player2:score * NumRolls
+	Player2:move and exit Player1:score * NumRolls
+end)
