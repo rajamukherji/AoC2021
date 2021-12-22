@@ -1,0 +1,66 @@
+class: cube(:x1, :x2, :y1, :y2, :z1, :z2)
+
+fun split(A1, A2, B1, B2) do
+	let R := []
+	if A2 < B1 or A1 > B2 then
+		R:put((A1, A2, true))
+	elseif A1 < B1 then
+		R:put((A1, B1 - 1, true))
+		if B2 < A2 then
+			R:put((B1, B2, nil))
+			R:put((B2 + 1, A2, true))
+		else
+			R:put((B1, A2, nil))
+		end
+	elseif B2 < A2 then
+		R:put((A1, B2, nil))
+		R:put((B2 + 1, A2, true))
+	else
+		R:put((A1, A2, nil))
+	end
+	ret R
+end
+
+meth -(A: cube, B: cube): list[cube] do
+	let Cubes := []
+	for (X1, X2, VX) in split(A:x1, A:x2, B:x1, B:x2) do
+		if VX then
+			Cubes:put(cube(X1, X2, A:y1, A:y2, A:z1, A:z2))
+		else
+			for (Y1, Y2, VY) in split(A:y1, A:y2, B:y1, B:y2) do
+				if VY then
+					Cubes:put(cube(X1, X2, Y1, Y2, A:z1, A:z2))
+				else
+					for (Z1, Z2, VZ) in split(A:z1, A:z2, B:z1, B:z2) do
+						if VZ then
+							Cubes:put(cube(X1, X2, Y1, Y2, Z1, Z2))
+						end
+					end
+				end
+			end
+		end
+	end
+	ret Cubes
+end
+
+let On := []
+let Input := file(Args[1], "r")
+loop
+	let Match := Input:read % r"(on|off) x=([-0-9]+)..([-0-9]+),y=([-0-9]+)..([-0-9]+),z=([-0-9]+)..([-0-9]+)\n"
+	while Match
+	let Cube := cube(integer(Match[3]), integer(Match[4]), integer(Match[5]), integer(Match[6]), integer(Match[7]), integer(Match[8]))
+	for Cube2 in On:splice do
+		let Cubes := Cube2 - Cube
+		On:grow(Cubes)
+	end
+	if Match[2] = "on" then
+		On:put(Cube)
+	end
+end
+
+let Sum := sum(On; Cube) do
+	:>print('Cube = {Cube}\n')
+	(Cube:x2 + 1 - Cube:x1) * (Cube:y2 + 1 - Cube:y1) * (Cube:z2 + 1 - Cube:z1)
+end
+
+print('Sum = {Sum}\n')
