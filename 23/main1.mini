@@ -1,0 +1,206 @@
+:<
+########################
+# 1 2 . 3 . 4 . 5 . 6 7#
+##### 8##10##12##14#####
+    # 9##11##13##15#
+    #################
+
+15 positions 
+>:
+
+class: move(:src, :dest, :dist, :blocks, :type)
+
+let Moves := [[
+	move(1, 8, 3, [2], 1),
+	move(1, 9, 4, [2, 8], 1),
+	move(1, 10, 5, [2, 3], 10),
+	move(1, 11, 6, [2, 3, 10], 10),
+	move(1, 12, 7, [2, 3, 4], 100),
+	move(1, 13, 8, [2, 3, 4, 12], 100),
+	move(1, 14, 9, [2, 3, 4, 5], 1000),
+	move(1, 15, 10, [2, 3, 4, 5, 14], 1000)
+], [
+	move(2, 8, 2, [], 1),
+	move(2, 9, 3, [8], 1),
+	move(2, 10, 4, [3], 10),
+	move(2, 11, 5, [3, 10], 10),
+	move(2, 12, 6, [3, 4], 100),
+	move(2, 13, 7, [3, 4, 12], 100),
+	move(2, 14, 8, [3, 4, 5], 1000),
+	move(2, 15, 9, [3, 4, 5, 14], 1000)
+], [
+	move(3, 8, 2, [], 1),
+	move(3, 9, 3, [8], 1),
+	move(3, 10, 2, [], 10),
+	move(3, 11, 3, [10], 10),
+	move(3, 12, 4, [4], 100),
+	move(3, 13, 5, [4, 12], 100),
+	move(3, 14, 6, [4, 5], 1000),
+	move(3, 15, 7, [4, 5, 14], 1000)
+], [
+	move(4, 8, 4, [3], 1),
+	move(4, 9, 5, [3, 8], 1),
+	move(4, 10, 2, [], 10),
+	move(4, 11, 3, [10], 10),
+	move(4, 12, 2, [], 100),
+	move(4, 13, 3, [12], 100),
+	move(4, 14, 4, [5], 1000),
+	move(4, 15, 5, [5, 14], 1000)
+], [
+	move(5, 8, 6, [3, 4], 1),
+	move(5, 9, 7, [3, 4, 8], 1),
+	move(5, 10, 4, [4], 10),
+	move(5, 11, 5, [4, 10], 10),
+	move(5, 12, 2, [], 100),
+	move(5, 13, 3, [12], 100),
+	move(5, 14, 2, [], 1000),
+	move(5, 15, 3, [14], 1000)
+], [
+	move(6, 8, 8, [3, 4, 5], 1),
+	move(6, 9, 9, [3, 4, 5, 8], 1),
+	move(6, 10, 6, [4, 5], 10),
+	move(6, 11, 7, [4, 5, 10], 10),
+	move(6, 12, 4, [5], 100),
+	move(6, 13, 5, [5, 12], 100),
+	move(6, 14, 2, [], 1000),
+	move(6, 15, 3, [14], 1000)
+], [
+	move(7, 8, 9, [3, 4, 5, 6], 1),
+	move(7, 9, 10, [3, 4, 5, 6, 8], 1),
+	move(7, 10, 7, [4, 5, 6], 10),
+	move(7, 11, 8, [4, 5, 6, 10], 10),
+	move(7, 12, 5, [5, 6], 100),
+	move(7, 13, 6, [5, 6, 12], 100),
+	move(7, 14, 3, [6], 1000),
+	move(7, 15, 4, [6, 14], 1000)
+], [
+	move(8, 1, 3, [2], nil),
+	move(8, 2, 2, [], nil),
+	move(8, 3, 2, [], nil),
+	move(8, 4, 4, [3], nil),
+	move(8, 5, 6, [3, 4], nil),
+	move(8, 6, 8, [3, 4, 5], nil),
+	move(8, 7, 9, [3, 4, 5, 6], nil)
+], [
+	move(9, 1, 4, [2, 8], nil),
+	move(9, 2, 3, [8], nil),
+	move(9, 3, 3, [8], nil),
+	move(9, 4, 5, [3, 8], nil),
+	move(9, 5, 7, [3, 4, 8], nil),
+	move(9, 6, 9, [3, 4, 5, 8], nil),
+	move(9, 7, 10, [3, 4, 5, 6, 8], nil)
+], [
+	move(10, 1, 5, [2, 3], nil),
+	move(10, 2, 4, [3], nil),
+	move(10, 3, 2, [], nil),
+	move(10, 4, 2, [], nil),
+	move(10, 5, 4, [4], nil),
+	move(10, 6, 6, [4, 5], nil),
+	move(10, 7, 7, [4, 5, 6], nil)
+], [
+	move(11, 1, 6, [2, 3, 10], nil),
+	move(11, 2, 5, [3, 10], nil),
+	move(11, 3, 3, [10], nil),
+	move(11, 4, 3, [10], nil),
+	move(11, 5, 5, [4, 10], nil),
+	move(11, 6, 7, [4, 5, 10], nil),
+	move(11, 7, 8, [4, 5, 6, 10], nil)
+], [
+	move(12, 1, 7, [2, 3, 4], nil),
+	move(12, 2, 6, [3, 4], nil),
+	move(12, 3, 4, [4], nil),
+	move(12, 4, 2, [], nil),
+	move(12, 5, 2, [], nil),
+	move(12, 6, 4, [5], nil),
+	move(12, 7, 5, [5, 6], nil)
+], [
+	move(13, 1, 8, [2, 3, 4, 12], nil),
+	move(13, 2, 7, [3, 4, 12], nil),
+	move(13, 3, 5, [4, 12], nil),
+	move(13, 4, 3, [12], nil),
+	move(13, 5, 3, [12], nil),
+	move(13, 6, 5, [5, 12], nil),
+	move(13, 7, 6, [5, 6, 12], nil)
+], [
+	move(14, 1, 9, [2, 3, 4, 5], nil),
+	move(14, 2, 8, [3, 4, 5], nil),
+	move(14, 3, 6, [4, 5], nil),
+	move(14, 4, 4, [5], nil),
+	move(14, 5, 2, [], nil),
+	move(14, 6, 2, [], nil),
+	move(14, 7, 3, [6], nil)
+], [
+	move(15, 1, 10, [2, 3, 4, 5, 14], nil),
+	move(15, 2, 9, [3, 4, 5, 14], nil),
+	move(15, 3, 7, [4, 5, 14], nil),
+	move(15, 4, 5, [5, 14], nil),
+	move(15, 5, 3, [14], nil),
+	move(15, 6, 3, [14], nil),
+	move(15, 7, 4, [6, 14], nil)
+]]
+
+for Next in Moves do
+	for Move in Next do
+		Move:blocks:push(Move:dest)
+	end
+end
+
+fun finished(State) do
+	ret State[8] = 1 and
+		State[9] = 1 and
+		State[10] = 10 and
+		State[11] = 10 and
+		State[12] = 100 and
+		State[13] = 100 and
+		State[14] = 1000 and
+		State[15] = 1000
+end
+
+let Costs := []
+let Queue := queue()
+let Queued := {}
+
+fun advance(State, Cost) do
+	print('State = {State}, Cost = {Cost}\n')
+	for Pos in 1 .. 15 do
+		let Type := State[Pos]
+		if Type = 0 then
+			next
+		end
+		for Dest in Moves[Pos] do
+			if Dest:type and Dest:type != Type then
+				next
+			end
+			if State[Dest:blocks]:sum > 0 then
+				next
+			end
+			let Next := State:copy
+			Next[Pos] := 0
+			Next[Dest:dest] := Type
+			let Cost2 := Dest:dist * Type + Cost
+			if let Entry := Queued[Next] then
+				if Entry:queued and Entry:priority < -Cost2 then
+					Entry:update(-Cost2)
+				end
+			elseif finished(Next) then
+				Costs:put(Cost2)
+			else
+				:>print('\tAdding {Next}, {Cost2} to queue\n')
+				Queued[Next] := Queue:insert(Next, -Cost2)
+			end
+		end
+	end
+end
+
+:>Queue:insert($[0, 0, 0, 0, 0, 0, 0, 10, 1, 100, 1000, 10, 100, 1000, 1], 0)
+Queue:insert($[0, 0, 0, 0, 0, 0, 0, 10, 100, 1, 1000, 10, 1000, 100, 1], 0)
+
+loop
+	print('#States = {Queue:count}\n')
+	let (State, Cost) := while Queue:next
+	advance(State, -Cost)
+end
+
+print(Costs, "\n")
+print(min(Costs), "\n")
+

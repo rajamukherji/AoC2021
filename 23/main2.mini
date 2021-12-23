@@ -1,0 +1,180 @@
+:<
+########################
+# 1 2 . 3 . 4 . 5 . 6 7#
+##### 8##12##16##20#####
+    # 9##13##17##21#
+    #10##14##18##22#
+    #11##15##19##23#
+    #################
+
+15 positions 
+>:
+
+class: move(:src, :dest, :dist, :blocks, :type, :depth)
+
+let Moves := list(1 .. 23;) []
+
+fun room_moves(Src, Base, Dist, Blocks) do
+	let Type := 10 ^ ((Base - 8) / 4)
+	for I in 0 .. 3 do
+		Moves[Src]:put(move(Src, Base + I, Dist + I, Blocks + list(Base up I), Type, 3 - I))
+	end
+end
+
+room_moves(1, 8, 3, [2])
+room_moves(1, 12, 5, [2, 3])
+room_moves(1, 16, 7, [2, 3, 4])
+room_moves(1, 20, 9, [2, 3, 4, 5])
+
+room_moves(2, 8, 2, [])
+room_moves(2, 12, 4, [3])
+room_moves(2, 16, 6, [3, 4])
+room_moves(2, 20, 8, [3, 4, 5])
+
+room_moves(3, 8, 2, [])
+room_moves(3, 12, 2, [])
+room_moves(3, 16, 4, [4])
+room_moves(3, 20, 6, [4, 5])
+
+room_moves(4, 8, 4, [3])
+room_moves(4, 12, 2, [])
+room_moves(4, 16, 2, [])
+room_moves(4, 20, 4, [5])
+
+room_moves(5, 8, 6, [3, 4])
+room_moves(5, 12, 4, [4])
+room_moves(5, 16, 2, [])
+room_moves(5, 20, 2, [])
+
+room_moves(6, 8, 8, [3, 4, 5])
+room_moves(6, 12, 6, [4, 5])
+room_moves(6, 16, 4, [5])
+room_moves(6, 20, 2, [])
+
+room_moves(7, 8, 9, [3, 4, 5, 6])
+room_moves(7, 12, 7, [4, 5, 6])
+room_moves(7, 16, 5, [5, 6])
+room_moves(7, 20, 3, [6])
+
+fun hall_moves(Base, Dest, Dist, Blocks) do
+	for I in 0 .. 3 do
+		let Src := Base + I
+		Moves[Src]:put(move(Src, Dest, Dist + I, Blocks + list(Base up I), nil))
+	end
+end
+
+hall_moves(8, 1, 3, [2])
+hall_moves(8, 2, 2, [])
+hall_moves(8, 3, 2, [])
+hall_moves(8, 4, 4, [3])
+hall_moves(8, 5, 6, [3, 4])
+hall_moves(8, 6, 8, [3, 4, 5])
+hall_moves(8, 7, 9, [3, 4, 5, 6])
+
+hall_moves(12, 1, 5, [2, 3])
+hall_moves(12, 2, 4, [3])
+hall_moves(12, 3, 2, [])
+hall_moves(12, 4, 2, [])
+hall_moves(12, 5, 4, [4])
+hall_moves(12, 6, 6, [4, 5])
+hall_moves(12, 7, 7, [4, 5, 6])
+
+hall_moves(16, 1, 7, [2, 3, 4])
+hall_moves(16, 2, 6, [3, 4])
+hall_moves(16, 3, 4, [4])
+hall_moves(16, 4, 2, [])
+hall_moves(16, 5, 2, [])
+hall_moves(16, 6, 4, [5])
+hall_moves(16, 7, 5, [5, 6])
+
+hall_moves(20, 1, 9, [2, 3, 4, 5])
+hall_moves(20, 2, 8, [3, 4, 5])
+hall_moves(20, 3, 6, [4, 5])
+hall_moves(20, 4, 4, [5])
+hall_moves(20, 5, 2, [])
+hall_moves(20, 6, 2, [])
+hall_moves(20, 7, 3, [6])
+
+for Next in Moves do
+	for Move in Next do
+		Move:blocks:push(Move:dest)
+	end
+end
+
+let Finished := array::int32([23]; I) do
+	if I < 8 then
+		0
+	else
+		10 ^ ((I - 8) div 4)
+	end
+end
+
+let Costs := []
+let Queue := queue()
+let Queued := {}
+
+fun advance(State, Cost) do
+	print('State = {State}, Cost = {Cost}\n')
+	for Pos, Dests in Moves do
+		let Type := State[Pos]
+		if Type = 0 then
+			next
+		end
+		for Dest in Dests do
+			:>print('Dest = {Dest}\n')
+			if Dest:type then
+				if Dest:type != Type then
+					next
+				end
+				for Depth in 1 .. Dest:depth do
+					if State[Dest:dest + Depth] != Type then
+						exit next
+					end
+				end
+			end
+			if State[Dest:blocks]:sum > 0 then
+				next
+			end
+			let Next := State:copy
+			Next[Pos] := 0
+			Next[Dest:dest] := Type
+			let Cost2 := Dest:dist * Type + Cost
+			if let Entry := Queued[Next] then
+				if Entry:queued and Entry:priority < -Cost2 then
+					Entry:update(-Cost2)
+				end
+			elseif Next <> Finished = 0 then
+				Costs:put(Cost2)
+			else
+				:>print('\tAdding {Next}, {Cost2} to queue\n')
+				Queued[Next] := Queue:insert(Next, -Cost2)
+			end
+		end
+	end
+end
+
+:<Queue:insert(array(array::int32, [
+	0, 0, 0, 0, 0, 0, 0,
+	10, 1000, 1000, 1,
+	100, 100, 10, 1000,
+	10, 10, 1, 100,
+	1000, 1, 100, 1
+]), 0)>:
+
+Queue:insert(array(array::int32, [
+	0, 0, 0, 0, 0, 0, 0,
+	10, 1000, 1000, 100,
+	1, 100, 10, 1000,
+	10, 10, 1, 1000,
+	100, 1, 100, 1
+]), 0)
+
+loop
+	print('#States = {Queue:count}\n')
+	let (State, Cost) := while Queue:next
+	advance(State, -Cost)
+end
+
+print(Costs, "\n")
+print(min(Costs), "\n")
+
