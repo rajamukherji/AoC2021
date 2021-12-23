@@ -10,9 +10,9 @@ let (W, H) := Map:shape
 fun enqueue(Pos, Score) do
 	if let Node := Nodes[Pos] then
 		if Node != "Done" then
-			if Score > Node:score then
+			if Score > Node:priority then
 				print('Updating: {Pos} -> {Score}\n')
-				Node:update(Score)
+				Node:adjust(Score)
 			end
 		end
 	else
@@ -26,7 +26,7 @@ let Best := loop
 	let Value := Next:value
 	Nodes[Value] := "Done"
 	let (X, Y) := Value
-	let Score := Next:score
+	let Score := Next:priority
 	print('{Value} -> {Score}\n')
 	if X = W and Y = H then
 		exit -Score

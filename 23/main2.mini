@@ -140,9 +140,7 @@ fun advance(State, Cost) do
 			Next[Dest:dest] := Type
 			let Cost2 := Dest:dist * Type + Cost
 			if let Entry := Queued[Next] then
-				if Entry:queued and Entry:priority < -Cost2 then
-					Entry:update(-Cost2)
-				end
+				Entry:raise(-Cost2)
 			elseif Next <> Finished = 0 then
 				Costs:put(Cost2)
 			else
