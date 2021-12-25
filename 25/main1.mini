@@ -1,0 +1,46 @@
+def Cucumbers := {"." is 0, ">" is 1, "v" is 2}
+
+var Map := $list(file(Args[1], "r"):rest / "\n"; Line) do
+	list(Line:trim, Cucumbers[_])
+end
+
+fun display(Map) do
+	for I in 1 .. Map:shape[1] do
+		print(Map[I], "\n")
+	end
+	print("\n\n")
+end
+
+fun step(Map) do
+	let (H, W) := Map:shape
+	let East := Map:copy
+	for (Y, X) in (Map = 1):where do
+		let X2 := X % W + 1
+		if Map[Y, X2] = 0 then
+			East[Y, X] := 0
+			East[Y, X2] := 1
+		end
+	end
+	let South := East:copy
+	for (Y, X) in (Map = 2):where do
+		let Y2 := Y % H + 1
+		if East[Y2, X] = 0 then
+			South[Y, X] := 0
+			South[Y2, X] := 2
+		end
+	end
+	ret South
+end
+
+display(Map)
+let Steps := for I in 1:up do
+	let Old := Map
+	Map := step(Map)
+	print('Step {I}: \n')
+	display(Map)
+	if Old <> Map = 0 then
+		exit I
+	end
+end
+
+print('Steps = {Steps}\n')

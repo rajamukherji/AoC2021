@@ -1,0 +1,340 @@
+class: expr(:min, :max, :value, :round)
+
+class: input(expr, :n, init is; Input, N) do
+	Input:n := N
+	Input:min := 1
+	Input:max := 9
+end
+
+meth :evaluate(Input: input, Round: integer) Input:value or Input
+
+meth :append(Buffer: string::buffer, Input: input) do
+	Buffer:append('I{Input:n}')
+end
+
+meth :min(X: integer) X
+meth :max(X: integer) X
+
+meth :divr(A: integer, B: integer) do
+	if A < 0 then
+		-(-A div B)
+	else
+		A div B
+	end
+end
+
+class: infix(expr, :operands, init is; Infix, Operands) do
+	Infix:operands := Operands
+	switch type(Infix)::op: method
+	case (+) do
+		Infix:min := sum(Operands, :min)
+		Infix:max := sum(Operands, :max)
+	case (*) do
+		var Min := first(Operands):min
+		var Max := first(Operands):max
+		for Operand in Operands skip 1 do
+			let Next := grid([Min, Max], [Operand:min, Operand:max], *)
+			Min := min(Next)
+			Max := max(Next)
+		end
+		Infix:min := Min
+		Infix:max := Max
+	case (/) do
+		Infix:min := Operands[1]:min divr Operands[2]:max
+		Infix:max := Operands[1]:max divr Operands[2]:min
+	case (%) do
+		if let Base := Operands[2] in integer then
+			if Operands[1]:min >= 0 and Operands[1]:max <= Base then
+				Infix:min := Operands[1]:min
+				Infix:max := Operands[1]:max
+			else
+				Infix:min := 0
+				Infix:max := Base - 1
+			end
+		else
+			Infix:min := 0
+			Infix:max := Operands[2]:max - 1
+		end
+	case (=), (!=) do
+		Infix:min := 0
+		Infix:max := 1
+	end
+end
+
+meth :evaluate(X: integer, Round: integer) X
+
+meth :evaluate(Infix: infix, Round: integer) do
+	if Infix:round = Round then
+		Infix:value
+	else
+		Infix:round := Round
+		ret Infix:value := reduce(Infix:operands -> :evaluate(_, Round), type(Infix)::fn)
+	end
+end
+
+class: add(infix, op is +, fn is +, init is infix::init)
+class: mul(infix, op is *, fn is *, init is infix::init)
+class: div(infix, op is /, fn is :divr, init is infix::init)
+class: mod(infix, op is %, fn is %, init is infix::init)
+class: eql(infix, op is =, fn is :eql, init is infix::init)
+class: neq(infix, op is !=, fn is :neq, init is infix::init)
+
+fun flatten(Infix, Cache) do
+	if Cache:missing(Infix, fun 'E{Cache:size}') then
+		for Op in Infix:operands do
+			if Op in infix then
+				Op := flatten(Op, Cache)
+			end
+		end
+	end
+	ret Cache[Infix]
+end
+
+meth :append(Buffer: string::buffer, Infix: infix) do
+	Buffer:write('({Infix:operands, ' {type(Infix)::op:name} '})[{Infix:min} .. {Infix:max}]')
+end
+
+meth +(A: add, B: add) do
+	add(A:operands + B:operands)
+end
+
+meth +(A: add, B: any) do
+	if B = 0 then
+		A
+	else
+		add(A:operands + [B])
+	end
+end
+
+meth +(A: any, B: add) do
+	if A = 0 then
+		B
+	else
+		add(B:operands + [A])
+	end
+end
+
+meth +(A: expr, B: any) do
+	if B = 0 then
+		A
+	else
+		add([A, B])
+	end
+end
+
+meth +(A: integer, B: expr) do
+	if A = 0 then
+		B
+	else
+		add([A, B])
+	end
+end
+
+meth *(A: mul, B: mul) do
+	mul(A:operands + B:operands)
+end
+
+meth *(A: add, B: add) do
+	add(list(grid(A:operands, B:operands, *)))
+end
+
+meth *(A: mul, B: any) do
+	if B = 0 then
+		0
+	elseif B = 1 then
+		A
+	else
+		mul(A:operands + [B])
+	end
+end
+
+meth *(A: any, B: mul) do
+	if A = 0 then
+		0
+	elseif A = 1 then
+		B
+	else
+		mul(B:operands + [A])
+	end
+end
+
+meth *(A: expr, B: any) do
+	if B = 0 then
+		0
+	elseif B = 1 then
+		A
+	else
+		mul([A, B])
+	end
+end
+
+meth *(A: integer, B: expr) do
+	if A = 0 then
+		0
+	elseif A = 1 then
+		B
+	else
+		mul([A, B])
+	end
+end
+meth :divr(A: expr, B: any) do
+	if B = 1 then
+		A
+	elseif B = A then
+		1
+	else
+		div([A, B])
+	end
+end
+
+meth :divr(A: integer, B: expr) do
+	div([A, B])
+end 
+
+meth %(A: add, B: integer) do
+	let Filtered := list(A:operands ->? fun(Op) do
+		if Op in mul and first(Op:operands, ->?, _ = B) then
+			nil
+		else
+			Op
+		end
+	end)
+	if Filtered:length < A:operands:length then
+		mod([add(Filtered), B])
+	else
+		mod([A, B])
+	end
+end
+
+meth %(A: expr, B: any) do
+	if B = 1 then
+		0
+	else
+		mod([A, B])
+	end
+end
+
+meth %(A: integer, B: expr) do
+	mod([A, B])
+end
+
+meth :eql(A: expr, B: expr) do
+	if A:min > B:max then
+		0
+	elseif A:max < B:min then
+		0
+	elseif A = B then
+		1
+	else
+		eql([A, B])
+	end
+end
+
+meth :eql(A: eql, B: integer) do
+	if B < A:min or B > A:max then
+		0
+	elseif B = 0 then
+		neq(A:operands)
+	elseif B = 1 then
+		A
+	else
+		0
+	end
+end
+
+meth :eql(A: expr, B: integer) do
+	if B < A:min or B > A:max then
+		0
+	else
+		eql([A, B])
+	end
+end
+
+meth :eql(A: integer, B: expr) do
+	if A < B:min or A > B:max then
+		0
+	else
+		eql([A, B])
+	end
+end
+
+meth :eql(A: integer, B: integer) do
+	if A = B then
+		1
+	else
+		0
+	end
+end
+
+meth :neq(A: any, B: any) do
+	ret A eql B eql 0
+end
+
+var N := 1, Registers := {"w" is 0, "x" is 0, "y" is 0, "z" is 0}
+
+def Ops := {"add" is +, "mul" is *, "div" is :divr, "mod" is %, "eql" is :eql}
+
+let Input := file(Args[1], "r")
+let Inputs := list(1 .. 14; I) input(I)
+
+loop
+	let Line := Input:read
+	if let Match := Line % r"inp ([wxyz])" then
+		Registers[Match[2]] := Inputs[N]
+		N := old + 1
+	elseif let Match := Line % r"(add|mul|div|mod|eql) ([wxyz]) ([wxyz])" then
+		with Dest := Registers[Match[3]] do
+			Dest := Ops[Match[2]](Dest, Registers[Match[4]])
+		end
+	elseif let Match := Line % r"(add|mul|div|mod|eql) ([wxyz]) ([-0-9]+)" then
+		with Dest := Registers[Match[3]] do
+			Dest := Ops[Match[2]](Dest, integer(Match[4]))
+		end
+	else
+		exit
+	end
+end
+
+let Z := Registers["z"]
+
+var Round := 0
+let Digits := list(9 .. 1 by -1)
+
+fun solve(Z, I) do
+	print('{sum(Inputs, _:value, fun(X) if X then string(X) else "." end)}\n')
+	if I = 15 then
+		ret true
+	end
+	for D in Digits do
+		Round := old + 1
+		Inputs[I]:value := D
+		let Z2 := Z:evaluate(Round)
+		Z2:min > 0 and next
+		solve(Z2, I + 1) and ret true
+	end
+	Inputs[I]:value := nil
+end
+
+solve(Z, 1)
+
+
+:<Inputs[1]:value := 9
+Inputs[2]:value := 9
+Inputs[3]:value := 9
+Inputs[4]:value := 1
+Inputs[5]:value := 9
+Inputs[6]:value := 9
+Inputs[7]:value := 9
+Inputs[8]:value := 6
+let Z2 := Z:evaluate(1)
+
+if Z2 in integer then
+	print(Z2, "\n")
+else
+	let Cache := {}
+	flatten(Z2, Cache)
+	for Infix, Name in Cache do
+		print('{Name} = {Infix}\n')
+	end
+end
+>:
